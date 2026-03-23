@@ -1,0 +1,29 @@
+{
+  "name": "civic-oracle",
+  "version": "0.1.0",
+  "description": "XRPL → Polygon identity oracle: watches soulbound NFTs, builds Merkle trees, submits roots, serves proofs",
+  "scripts": {
+    "dev":   "ts-node src/oracle.ts",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "xrpl":                     "^3.0.0",
+    "ethers":                   "^6.12.0",
+    "merkletreejs":             "^0.4.0",
+    "keccak256":                "^1.0.6",
+    "@zk-kit/sparse-merkle-tree": "^2.0.0",
+    "poseidon-lite":            "^0.2.1",
+    "better-sqlite3":           "^9.6.0",
+    "express":                  "^4.19.0",
+    "dotenv":                   "^16.4.5",
+    "chalk":                    "^4.1.2"
+  },
+  "devDependencies": {
+    "typescript":        "^5.4.5",
+    "ts-node":           "^10.9.2",
+    "@types/node":       "^20.12.0",
+    "@types/express":    "^4.17.21",
+    "@types/better-sqlite3": "^7.6.10",
+    "@types/keccak256":  "^1.0.3"
+  }
+}
