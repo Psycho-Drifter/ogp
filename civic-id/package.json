@@ -1,0 +1,24 @@
+{
+  "name": "civic-identity-xrpl",
+  "version": "0.1.0",
+  "description": "Soulbound NFT identity system for decentralized governance — XRPL XLS-20",
+  "main": "dist/index.js",
+  "scripts": {
+    "setup:issuer": "ts-node src/setup-issuer.ts",
+    "mint:identity": "ts-node src/mint-identity.ts",
+    "verify:nft": "ts-node src/verify-identity.ts",
+    "revoke:identity": "ts-node src/revoke-identity.ts",
+    "test:soulbound": "ts-node src/test-soulbound.ts",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "chalk": "^4.1.2",
+    "dotenv": "^16.6.1",
+    "xrpl": "^3.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.37",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  }
+}
