@@ -119,7 +119,7 @@ Full constitutional architecture, economic framework, expert governance model, a
 ## Articles
 
 - **Part 1 — The concept:** [Corruption-Resistant Government: Revolutionising Democracy](https://blossumnow.com/corruption-resistant-government/)
-- **Part 2 — The architecture:** *(link to be added after publication)*
+- **Part 2 — The architecture:** ([Open Governance Protocol: Building the Architecture](https://blossumnow.com/open-governance-protocol-architecture/))
 
 ---
 
