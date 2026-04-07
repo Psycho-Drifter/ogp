@@ -87,7 +87,7 @@ describe('Civic Governance Contracts', function () {
 
     const now = Math.floor(Date.now() / 1000)
     await identityVerifier.connect(oracle).publishIdentityRoot(
-      CYCLE_ID, root, now - 1, now + 86400 * 30,
+      CYCLE_ID, root, now - 3600, now + 86400 * 30,
       citizens.length, 'xrpl-ledger-hash-abc123'
     )
     return { tree, citizenData }
