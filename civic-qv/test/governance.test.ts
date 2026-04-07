@@ -187,7 +187,7 @@ describe('Civic Governance Contracts', function () {
       )
       await expect(
         qvContract.connect(oversightMember).activateProposal(2n)
-      ).to.be.revertedWith('QV: no AI briefing attached')
+      ).to.be.revertedWith('QV: not in AI review')
     })
 
     it('oversight panel activates voting', async function () {
