@@ -166,17 +166,18 @@ export function getSnapshot(cycleId: number): CycleSnapshot | null {
 
 // ── Row mapper ────────────────────────────────────────────────────────────────
 
-function rowToRecord(row: Record<string, unknown>): IdentityRecord {
+function rowToRecord(row: unknown): IdentityRecord {
+  const r = row as Record<string, unknown>;
   return {
-    xrplNftId:      row['xrpl_nft_id'] as string,
-    citizenAddress: row['citizen_address'] as string,
-    jurisdiction:   row['jurisdiction'] as string,
-    zkCommitment:   row['zk_commitment'] as string,
-    shardId:        row['shard_id'] as number,
-    voiceCredits:   row['voice_credits'] as number,
-    status:         row['status'] as 'active' | 'revoked',
-    xrplLedger:     row['xrpl_ledger'] as number,
-    createdAt:      row['created_at'] as string,
-    revokedAt:      row['revoked_at'] as string | null,
+    xrplNftId:      r['xrpl_nft_id'] as string,
+    citizenAddress: r['citizen_address'] as string,
+    jurisdiction:   r['jurisdiction'] as string,
+    zkCommitment:   r['zk_commitment'] as string,
+    shardId:        r['shard_id'] as number,
+    voiceCredits:   r['voice_credits'] as number,
+    status:         r['status'] as 'active' | 'revoked',
+    xrplLedger:     r['xrpl_ledger'] as number,
+    createdAt:      r['created_at'] as string,
+    revokedAt:      r['revoked_at'] as string | null,
   }
 }
