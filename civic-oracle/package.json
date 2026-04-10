@@ -11,7 +11,7 @@
     "ethers":                   "^6.12.0",
     "merkletreejs":             "^0.4.0",
     "keccak256":                "^1.0.6",
-    "@zk-kit/sparse-merkle-tree": "^2.0.0",
+    "@zk-kit/sparse-merkle-tree": "^0.2.0",
     "poseidon-lite":            "^0.2.1",
     "better-sqlite3":           "^9.6.0",
     "express":                  "^4.19.0",
