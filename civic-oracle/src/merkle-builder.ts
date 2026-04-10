@@ -81,7 +81,7 @@ export interface PoseidonSMT {
 }
 
 async function buildPoseidonSMT(identities: IdentityRecord[]): Promise<PoseidonSMT> {
-  const { poseidon } = await import('poseidon-lite')
+  const { poseidon2: poseidon } = await import('poseidon-lite')
 
   const entries = new Map<bigint, bigint>()
 
@@ -139,8 +139,8 @@ async function getSMTProof(
   leafIndex: bigint,
   depth: number
 ): Promise<SMTProof> {
-  const { poseidon } = await import('poseidon-lite')
-
+  const { poseidon2: poseidon } = await import('poseidon-lite')
+  
   const pathElements: bigint[] = []
   const pathIndices:  number[]  = []
 
