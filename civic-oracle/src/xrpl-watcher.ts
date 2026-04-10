@@ -157,7 +157,7 @@ async function replayFromLedger(client: Client, fromLedger: number): Promise<num
     for (const { tx, meta } of response.result.transactions) {
       if (!tx || typeof tx !== 'object') continue
       const txWithMeta = { ...tx, meta }
-      const ledger = (tx as Record<string, unknown>)['ledger_index'] as number ?? 0
+      const ledger = (tx as unknown as Record<string, unknown>)['ledger_index'] as number ?? 0
 
       processMint(txWithMeta as Record<string, unknown>, ledger)
       processBurn(txWithMeta as Record<string, unknown>)
@@ -203,8 +203,8 @@ export async function startXRPLWatcher(onNewIdentity?: () => void): Promise<void
   })
 
   client.on('transaction', (event) => {
-    const tx     = event.transaction as Record<string, unknown>
-    const ledger = (event as Record<string, unknown>)['ledger_index'] as number ?? 0
+    const tx     = event.transaction as unknown as Record<string, unknown>
+    const ledger = (event as unknown as Record<string, unknown>)['ledger_index'] as number ?? 0
 
     processMint({ ...tx, meta: event.meta }, ledger)
     processBurn(tx)
