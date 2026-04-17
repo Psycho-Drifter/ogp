@@ -146,4 +146,6 @@ typechain-types/
 # local runtime data
 oracle.db
 *.db
+*.db-shm
+*.db-wal
 .oversight-store.json
