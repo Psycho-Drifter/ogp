@@ -11,7 +11,7 @@
  * only needs one request before generating the proof client-side.
  *
  * Privacy note:
- *   This endpoint reveals that a given address is a registered citizen —
+ *   This endpoint reveals that a given XRPL address is a registered citizen —
  *   that is public information (the XRPL NFT is publicly visible anyway).
  *   It does NOT reveal vote direction, which is protected by the ZK circuit.
  */
@@ -20,7 +20,7 @@ import express, { Request, Response } from 'express'
 import * as dotenv from 'dotenv'
 import chalk from 'chalk'
 import { getIdentityByAddress, getSnapshot } from './identity-db'
-import { getCachedTrees, getProofForCitizen } from './merkle-builder'
+import { getCachedTrees, getIdentityCommitment, getProofForCitizen } from './merkle-builder'
 import type { CitizenProofBundle } from './types'
 
 dotenv.config()
@@ -53,8 +53,8 @@ export function startProofServer() {
     const { address } = req.params
     const cycleId     = parseInt(req.query['cycle'] as string ?? '0', 10)
 
-    if (!ethers.isAddress(address)) {
-      return res.status(400).json({ error: 'Invalid Ethereum address' })
+    if (!address) {
+      return res.status(400).json({ error: 'XRPL address is required' })
     }
 
     const trees = getCachedTrees()
@@ -76,6 +76,7 @@ export function startProofServer() {
 
       const bundle: CitizenProofBundle = {
         citizenAddress:       record.citizenAddress,
+        identityCommitment:   getIdentityCommitment(record.citizenAddress),
         shardId:              record.shardId,
         cycleId,
         jurisdiction:         record.jurisdiction,
@@ -116,6 +117,3 @@ export function startProofServer() {
     console.log(chalk.green(`✓ Proof server listening on port ${PORT}`))
   })
 }
-
-// Import ethers for address validation
-import { ethers } from 'ethers'

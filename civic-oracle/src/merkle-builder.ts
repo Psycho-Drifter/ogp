@@ -5,7 +5,7 @@
  *
  *   1. keccak256 Merkle tree (MerkleTree.js)
  *      Used by: HierarchicalIdentityVerifier.verifyAndGetCredits() on Polygon
- *      Leaf:    keccak256(abi.encodePacked(address, jurisdiction, voiceCredits))
+ *      Leaf:    keccak256(abi.encodePacked(identityCommitment, jurisdiction, voiceCredits))
  *      Root:    submitted on-chain each governance cycle
  *
  *   2. Poseidon Sparse Merkle Tree (zk-kit SMT)
@@ -31,7 +31,11 @@ import type { IdentityRecord, CycleSnapshot } from './types'
 export interface KeccakTree {
   tree:     MerkleTree
   root:     string            // hex string, ready for on-chain submission
-  leaves:   Map<string, Buffer>  // citizenAddress → leaf Buffer
+  leaves:   Map<string, Buffer>  // XRPL address → leaf Buffer
+}
+
+export function getIdentityCommitment(citizenAddress: string): string {
+  return ethers.keccak256(ethers.toUtf8Bytes(citizenAddress))
 }
 
 function buildKeccakTree(identities: IdentityRecord[]): KeccakTree {
@@ -39,13 +43,14 @@ function buildKeccakTree(identities: IdentityRecord[]): KeccakTree {
 
   const leafBuffers = identities.map(id => {
     // Must match HierarchicalIdentityVerifier:
-    //   keccak256(abi.encodePacked(citizen, jurisdiction, voiceCredits))
+    //   keccak256(abi.encodePacked(identityCommitment, jurisdiction, voiceCredits))
+    const identityCommitment = getIdentityCommitment(id.citizenAddress)
     const packed = ethers.solidityPacked(
-      ['address', 'string', 'uint256'],
-      [id.citizenAddress, id.jurisdiction, id.voiceCredits]
+      ['bytes32', 'string', 'uint256'],
+      [identityCommitment, id.jurisdiction, id.voiceCredits]
     )
     const leaf = Buffer.from(keccak256(Buffer.from(packed.slice(2), 'hex')))
-    leaves.set(id.citizenAddress.toLowerCase(), leaf)
+    leaves.set(id.citizenAddress, leaf)
     return leaf
   })
 
@@ -56,7 +61,7 @@ function buildKeccakTree(identities: IdentityRecord[]): KeccakTree {
 }
 
 export function getKeccakProof(keccakTree: KeccakTree, citizenAddress: string): string[] {
-  const leaf = keccakTree.leaves.get(citizenAddress.toLowerCase())
+  const leaf = keccakTree.leaves.get(citizenAddress)
   if (!leaf) throw new Error(`No leaf for address ${citizenAddress}`)
   return keccakTree.tree.getHexProof(leaf)
 }
@@ -140,7 +145,6 @@ async function getSMTProof(
   depth: number
 ): Promise<SMTProof> {
   const { poseidon2: poseidon } = await import('poseidon-lite')
-  
   const pathElements: bigint[] = []
   const pathIndices:  number[]  = []
 
@@ -218,7 +222,7 @@ export async function getProofForCitizen(
   citizenAddress: string,
 ): Promise<{ keccakProof: string[], poseidonProof: SMTProof, record: IdentityRecord }> {
   const record = trees.identities.find(
-    id => id.citizenAddress.toLowerCase() === citizenAddress.toLowerCase()
+    id => id.citizenAddress === citizenAddress
   )
   if (!record) throw new Error(`Citizen ${citizenAddress} not found in active identity set`)
 

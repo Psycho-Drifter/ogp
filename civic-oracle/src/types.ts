@@ -1,7 +1,7 @@
 // Identity as stored in the oracle database
 export interface IdentityRecord {
   xrplNftId:     string   // NFTokenID on XRPL
-  citizenAddress:string   // Polygon-compatible wallet address (from NFT memo)
+  citizenAddress:string   // XRPL citizen address carried by the NFT
   jurisdiction:  string   // "CA-BC", "US-CA", etc.
   zkCommitment:  string   // Poseidon(identitySecret, shardId) — from NFT memo
   shardId:       number   // always matches this oracle's SHARD_ID
@@ -15,9 +15,10 @@ export interface IdentityRecord {
 // A leaf in the keccak256 Merkle tree (for on-chain verification)
 export interface KeccakLeaf {
   citizenAddress: string
+  identityCommitment: string
   jurisdiction:   string
   voiceCredits:   number
-  leaf:           Buffer   // keccak256(packed(address, jurisdiction, voiceCredits))
+  leaf:           Buffer   // keccak256(packed(bytes32, jurisdiction, voiceCredits))
 }
 
 // A leaf in the Poseidon SMT (for ZK proof generation)
@@ -40,6 +41,7 @@ export interface CycleSnapshot {
 // Proof bundle returned to a citizen
 export interface CitizenProofBundle {
   citizenAddress: string
+  identityCommitment: string
   shardId:        number
   cycleId:        number
   jurisdiction:   string

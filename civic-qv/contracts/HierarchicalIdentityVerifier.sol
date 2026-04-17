@@ -207,11 +207,12 @@ contract HierarchicalIdentityVerifier is AccessControl {
      *   1. shardMerkleProof:    citizen is a leaf in shardId's depth-64 tree
      *   2. shardInPlanetProof:  shardId's root is a leaf in the interplanetary root
      *
-     * The leaf for step 1: keccak256(citizen, jurisdiction, voiceCredits)
+     * The leaf for step 1: keccak256(identityCommitment, jurisdiction, voiceCredits)
      * The leaf for step 2: keccak256(shardId, shardRoot)
      *
      * @param cycleId              Governance cycle
      * @param shardId              Which shard the citizen belongs to
+     * @param identityCommitment   bytes32 commitment derived from the citizen's XRPL address
      * @param jurisdiction         Citizen's jurisdiction within the shard
      * @param voiceCredits         Allocated credits (as encoded in the leaf)
      * @param shardMerkleProof     Proof: citizen ∈ shard identity tree
@@ -220,6 +221,7 @@ contract HierarchicalIdentityVerifier is AccessControl {
     function verifyAndGetCredits(
         uint256 cycleId,
         uint256 shardId,
+        bytes32 identityCommitment,
         string calldata jurisdiction,
         uint256 voiceCredits,
         bytes32[] calldata shardMerkleProof,
@@ -234,7 +236,7 @@ contract HierarchicalIdentityVerifier is AccessControl {
         require(block.timestamp <= sr.validUntil,            "HIV: cycle expired");
 
         // Step 1: Verify citizen is in the shard's identity tree
-        bytes32 citizenLeaf = keccak256(abi.encodePacked(msg.sender, jurisdiction, voiceCredits));
+        bytes32 citizenLeaf = keccak256(abi.encodePacked(identityCommitment, jurisdiction, voiceCredits));
         require(
             MerkleProof.verify(shardMerkleProof, sr.merkleRoot, citizenLeaf),
             "HIV: invalid citizen proof"
@@ -280,6 +282,7 @@ contract HierarchicalIdentityVerifier is AccessControl {
         uint256 cycleId,
         uint256 shardId,
         address citizen,
+        bytes32 identityCommitment,
         string calldata jurisdiction,
         uint256 voiceCredits,
         bytes32[] calldata shardMerkleProof
@@ -292,7 +295,7 @@ contract HierarchicalIdentityVerifier is AccessControl {
         if (block.timestamp < sr.validFrom)  return false;
         if (block.timestamp > sr.validUntil) return false;
 
-        bytes32 leaf = keccak256(abi.encodePacked(citizen, jurisdiction, voiceCredits));
+        bytes32 leaf = keccak256(abi.encodePacked(identityCommitment, jurisdiction, voiceCredits));
         return MerkleProof.verify(shardMerkleProof, sr.merkleRoot, leaf);
     }
 }

@@ -26,8 +26,7 @@ const IDENTITY_VERIFIER_ABI = [
     bytes32 merkleRoot,
     uint256 validFrom,
     uint256 validUntil,
-    uint256 identityCount,
-    string calldata xrplLedgerHash
+    uint256 identityCount
   ) external`,
   `function getShardRoot(uint256 shardId, uint256 cycleId) external view returns (
     tuple(bytes32 merkleRoot, uint256 validFrom, uint256 validUntil, uint256 identityCount, uint256 treeDepth, bool active)
@@ -71,7 +70,6 @@ export async function submitShardRoot(
     BigInt(validFrom),
     BigInt(validUntil),
     BigInt(citizenCount),
-    xrplLedgerHash,
   )
 
   console.log(chalk.gray(`   TX:      ${tx.hash}`))
