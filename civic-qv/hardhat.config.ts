@@ -7,6 +7,18 @@ const DEPLOYER_PRIVATE_KEY = process.env.DEPLOYER_PRIVATE_KEY ?? '0x' + '0'.repe
 const POLYGONSCAN_API_KEY  = process.env.POLYGONSCAN_API_KEY  ?? ''
 const ALCHEMY_MUMBAI_URL   = process.env.ALCHEMY_MUMBAI_URL   ?? ''
 const ALCHEMY_POLYGON_URL  = process.env.ALCHEMY_POLYGON_URL  ?? ''
+const POLYGON_RPC_URL      = process.env.POLYGON_RPC_URL      ?? ALCHEMY_POLYGON_URL
+const POLYGON_FORK_BLOCK_NUMBER = process.env.POLYGON_FORK_BLOCK_NUMBER
+  ? Number(process.env.POLYGON_FORK_BLOCK_NUMBER)
+  : undefined
+
+const hardhatForking =
+  POLYGON_RPC_URL
+    ? {
+        url: POLYGON_RPC_URL,
+        ...(POLYGON_FORK_BLOCK_NUMBER !== undefined ? { blockNumber: POLYGON_FORK_BLOCK_NUMBER } : {}),
+      }
+    : undefined
 
 const config: HardhatUserConfig = {
   solidity: {
@@ -17,8 +29,13 @@ const config: HardhatUserConfig = {
     },
   },
   networks: {
+    hardhat: {
+      chainId: 31337,
+      forking: hardhatForking,
+    },
     localhost: {
       url: 'http://127.0.0.1:8545',
+      chainId: 31337,
     },
     mumbai: {
       url: ALCHEMY_MUMBAI_URL,

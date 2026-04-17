@@ -76,12 +76,17 @@ function processMint(tx: Record<string, unknown>, ledgerIndex: number): void {
   if (meta) {
     const nodes = (meta['AffectedNodes'] as Array<Record<string, unknown>>) ?? []
     for (const node of nodes) {
-      const created = node['CreatedNode'] as Record<string, unknown> | undefined
-      if (created?.['LedgerEntryType'] === 'NFTokenPage') {
-        const nfts = ((created['NewFields'] as Record<string, unknown>)?.['NFTokens'] as Array<{NFToken: {NFTokenID: string}}>) ?? []
-        if (nfts.length > 0) nftTokenId = nfts[nfts.length - 1].NFToken.NFTokenID
-      }
-    }
+  const created = node['CreatedNode'] as Record<string, unknown> | undefined
+  if (created?.['LedgerEntryType'] === 'NFTokenPage') {
+    const nfts = ((created['NewFields'] as Record<string, unknown>)?.['NFTokens'] as Array<{NFToken: {NFTokenID: string}}>) ?? []
+    if (nfts.length > 0) nftTokenId = nfts[nfts.length - 1].NFToken.NFTokenID
+  }
+  const modified = node['ModifiedNode'] as Record<string, unknown> | undefined
+  if (modified?.['LedgerEntryType'] === 'NFTokenPage') {
+    const nfts = ((modified['FinalFields'] as Record<string, unknown>)?.['NFTokens'] as Array<{NFToken: {NFTokenID: string}}>) ?? []
+    if (nfts.length > 0) nftTokenId = nfts[nfts.length - 1].NFToken.NFTokenID
+  }
+}
   }
 
   if (!nftTokenId) {
