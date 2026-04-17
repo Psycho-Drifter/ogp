@@ -142,3 +142,8 @@ vite.config.ts.timestamp-*
 artifacts/
 cache/
 typechain-types/
+
+# local runtime data
+oracle.db
+*.db
+.oversight-store.json
