@@ -172,6 +172,29 @@ Districts choose their transport stack. OGP ships a LoRa reference implementatio
 
 ## 9. Civic-AI in CCP Mode
 
+## civic-ai Scenario Engine — Energy Threshold Rule
+
+The scenario engine is core civic-ai infrastructure active across all operational
+states (normal and all CCP tiers). It is not a CCP-specific feature.
+
+**Trigger rule:** The scenario engine runs full best/base/worst predictive
+briefings for:
+- All major votes (constitutional amendments, treaty ratification, national
+  budget, referenda)
+- All policy votes where consequence probability modelling is warranted
+
+For minor policy changes where the compute cost of running full scenario
+predictions is disproportionate to the probability or magnitude of downstream
+consequences, a standard AI briefing is sufficient. The threshold is determined
+by the Protocol Administration layer and is itself subject to citizen review.
+
+**CCP behaviour:**
+- Tier 1: scenario engine runs on Anthropic API (no change from normal)
+- Tier 2: scenario engine switches to local Ollama instance — capability
+  maintained, backend changes
+- Tier 3: scenario engine runs on Ollama if hardware available; falls back
+  to pre-generated briefings if not
+  
 ### Degraded Mode (Tier 1 & 2)
 In CCP mode the full cloud AI pipeline (Anthropic API) is unavailable. Quorum nodes run a local Ollama instance serving:
 - **Cached briefings** from the last successful sync (the most recent scenario engine output for active proposals)
