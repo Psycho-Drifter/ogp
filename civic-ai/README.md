@@ -16,6 +16,7 @@ src/
 ├── ipfs-publisher.ts   IPFS pinning via Pinata
 ├── oversight-store.ts  Panel review tracking + feedback loop
 ├── chain-submitter.ts  On-chain attachAIBriefing() submission
+├── scenario-engine.ts  Best/base/worst scenario modelling for major votes
 ├── pipeline.ts         Full end-to-end orchestrator with retry logic
 └── server.ts           REST API for panel interface + pipeline triggers
 ```
@@ -56,6 +57,30 @@ Every briefing is structured JSON with these mandatory fields:
 | `confidenceLevel` | 0.0–1.0 — AI's self-assessed certainty |
 | `limitations[]` | Known gaps in the analysis |
 | `translations{}` | All UN languages + jurisdiction languages |
+
+---
+
+### Scenario engine — predictive briefings for major votes
+
+For major votes (constitutional amendments, treaty ratification, national budget, referenda) and
+policy votes where consequence modelling is warranted, the scenario engine generates three
+structured predictive scenarios before the standard briefing is finalised:
+
+| Scenario | Description |
+|----------|-------------|
+| `best`   | Optimistic outcome — favourable conditions, high compliance, intended effects realised |
+| `base`   | Most probable outcome — realistic assumptions, moderate friction, mixed second-order effects |
+| `worst`  | Pessimistic outcome — adverse conditions, unintended consequences, stress-case impacts |
+
+Each scenario includes a `timeHorizon` (1yr / 5yr / 20yr), an `impactScore` (0–100), a
+`confidenceLevel`, and a `minorityImpact` sub-analysis. Scenarios are bundled into the same
+briefing JSON, pinned to IPFS, and anchored on-chain alongside the standard analysis.
+
+For minor procedural changes where compute cost is disproportionate to consequence probability,
+the standard briefing runs without scenario modelling. The trigger classification is a
+protocol-level decision managed by Protocol Administration.
+
+**Key file:** `src/scenario-engine.ts`
 
 ---
 
@@ -123,7 +148,7 @@ curl -X POST http://localhost:3001/oversight/review \
 
 ## Switching to a self-hosted open-source model
 
-For production, replace the Anthropic API with a locally-hosted model so the exact model weights are auditable:
+For production, replace the Anthropic API with a locally-hosted model so the exact model weights are auditable. The pipeline also switches providers automatically during connectivity outages, following the Civic Continuity Protocol (CCP): Tier 1 outages (<72 hrs) continue on the Anthropic API; Tier 2 (72 hrs–30 days) switches to local Ollama; Tier 3 catastrophic outages fall back to pre-generated briefings if Ollama hardware is unavailable. See docs/CCP-SPEC.md for the full resilience specification.
 
 ```bash
 # Install Ollama (https://ollama.ai)

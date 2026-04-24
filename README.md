@@ -21,8 +21,9 @@ Representative democracy was invented to solve a scaling problem: you can't have
 ogp/
 ├── civic-id/          Identity layer — soulbound NFTs on the XRP Ledger
 ├── civic-qv/          Voting layer — quadratic voting smart contracts on Polygon
-├── civic-ai/          Advisory layer — AI briefing pipeline (open-source LLM)
-└── civic-oracle/      Bridge layer — XRPL identity → Polygon Merkle root oracle
+├── civic-ai/          Advisory layer — AI briefing + scenario engine (open-source LLM)
+├── civic-oracle/      Bridge layer — XRPL identity → Polygon Merkle root oracle
+└── docs/              Protocol specifications — CCP, scenario engine, architecture
 ```
 
 ### `civic-id` — Verified identity
@@ -40,9 +41,11 @@ Smart contracts on Polygon that enforce the voting rules at the protocol level. 
 ---
 
 ### `civic-ai` — AI advisory pipeline
-Every proposal triggers a structured analysis pipeline. An open-source language model produces a plain-language briefing: risk scoring, predicted outcomes, historical precedents, and a mandatory analysis of minority and vulnerable group impacts. A citizen oversight panel reviews every briefing before it is published. The AI informs. It never decides. The briefing is pinned to IPFS and its content hash is committed on-chain — immutable proof of exactly what citizens saw before they voted.
+Every proposal triggers a structured analysis pipeline. An open-source language model produces a plain-language briefing: risk scoring, predicted outcomes, historical precedents, and a mandatory analysis of minority and vulnerable group impacts. For major votes — constitutional amendments, treaty ratification, national budget, referenda — the scenario engine generates full best/base/worst predictive briefings before any vote opens. A citizen oversight panel reviews every briefing before it is published. The AI informs. It never decides. The briefing is pinned to IPFS and its content hash is committed on-chain — immutable proof of exactly what citizens saw before they voted.
+In extended outages (Civic Continuity Protocol Tier 2+), the pipeline switches automatically from the Anthropic API to a locally-hosted Ollama model, with pre-generated briefings as a last-resort fallback.
+Key files: src/pipeline.ts · src/ai-analyzer.ts · src/oversight-store.ts · src/scenario-engine.ts
 
-**Key files:** `src/pipeline.ts` · `src/ai-analyzer.ts` · `src/oversight-store.ts`
+**Key files:** `src/pipeline.ts` · `src/ai-analyzer.ts` · `src/oversight-store.ts` ·  `scenario-engine.ts`
 
 ---
 
@@ -112,6 +115,7 @@ OGP is not only a technical system. The governance architecture it implements dr
 - **Tier 3 (60% supermajority + 6-month deliberation):** Protocol rules, court structure, lobbying ban, natural monopoly definitions.
 - **Tier 4 (simple majority):** Ordinary policy — budget, regulations, programmes.
 
+The protocol also includes a Civic Continuity Protocol (CCP) — a Tier 2 constitutional operational provision that keeps governance running during connectivity outages. Three tiers cover routine disruptions (<72 hrs), extended outages (72 hrs–30 days), and catastrophic events (>30 days, requiring physical assembly). Quorum nodes with dual connectivity and offline-capable hardware ensure no citizen loses their vote to infrastructure failure. Full specification: docs/CCP-SPEC.md.
 Full constitutional architecture, economic framework, expert governance model, and court hierarchy are documented in the articles below.
 
 ---
