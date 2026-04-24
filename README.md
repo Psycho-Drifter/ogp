@@ -45,7 +45,7 @@ Every proposal triggers a structured analysis pipeline. An open-source language 
 In extended outages (Civic Continuity Protocol Tier 2+), the pipeline switches automatically from the Anthropic API to a locally-hosted Ollama model, with pre-generated briefings as a last-resort fallback.
 Key files: src/pipeline.ts · src/ai-analyzer.ts · src/oversight-store.ts · src/scenario-engine.ts
 
-**Key files:** `src/pipeline.ts` · `src/ai-analyzer.ts` · `src/oversight-store.ts`
+**Key files:** `src/pipeline.ts` · `src/ai-analyzer.ts` · `src/oversight-store.ts` ·  `scenario-engine.ts`
 
 ---
 
