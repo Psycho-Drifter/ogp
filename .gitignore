@@ -149,3 +149,6 @@ oracle.db
 *.db-shm
 *.db-wal
 .oversight-store.json
+
+*.DS_Store
+*/*.DS_Store
