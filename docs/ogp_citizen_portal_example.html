@@ -1,0 +1,478 @@
+
+<h2 class="sr-only">OGP Citizen Portal v4 — proposals now show inline briefing previews, and recent briefings are tappable to load full analysis</h2>
+<style>
+*{box-sizing:border-box}
+:root{--z:1}
+.ogp{padding:0 0 2rem;font-family:var(--font-sans)}
+.lbl{font-size:calc(11px * var(--z));color:var(--color-text-secondary);letter-spacing:.05em;text-transform:uppercase;margin:0 0 3px}
+.card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:calc(12px * var(--z)) calc(14px * var(--z));margin-bottom:calc(10px * var(--z))}
+.stat-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:14px}
+.stat{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:calc(10px * var(--z)) calc(12px * var(--z))}
+.stat-n{font-size:calc(19px * var(--z));font-weight:500;color:var(--color-text-primary);margin:0}
+.pill{font-size:calc(11px * var(--z));font-weight:500;padding:3px calc(9px * var(--z));border-radius:99px;white-space:nowrap}
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:calc(11px * var(--z));padding:3px calc(8px * var(--z));border-radius:99px;border:0.5px solid var(--color-border-tertiary);color:var(--color-text-secondary);white-space:nowrap}
+.dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.ok{background:#22C97A}.warn{background:#F5A623}
+.nav{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;background:var(--color-background-secondary);border-radius:var(--border-radius-lg);padding:4px;margin-bottom:16px}
+.tab{background:none;border:none;border-radius:var(--border-radius-md);padding:calc(8px * var(--z)) 4px;font-size:calc(12px * var(--z));color:var(--color-text-secondary);cursor:pointer;min-height:calc(40px * var(--z));font-weight:400;transition:background .15s,color .15s;white-space:nowrap;text-align:center}
+.tab:hover{color:var(--color-text-primary);background:var(--color-background-primary)}
+.tab.on{background:var(--color-background-info);color:var(--color-text-info);font-weight:500}
+.panel{display:none}.panel.on{display:block}
+.g2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 14px}
+.prow{padding:calc(11px * var(--z)) 0;border-bottom:0.5px solid var(--color-border-tertiary)}
+.prow:last-child{border-bottom:none}
+.btn{display:inline-flex;align-items:center;background:none;border:0.5px solid var(--color-border-secondary);color:var(--color-text-info);padding:0 calc(14px * var(--z));border-radius:var(--border-radius-md);font-size:calc(13px * var(--z));cursor:pointer;font-weight:500;margin:0 8px 8px 0;min-height:calc(44px * var(--z))}
+.btn:hover{background:var(--color-background-secondary)}
+.btn:disabled{opacity:.38;cursor:not-allowed}
+.blink{background:none;border:none;padding:0;font-size:calc(12px * var(--z));color:var(--color-text-info);cursor:pointer;text-decoration:underline;text-underline-offset:2px;font-weight:500;display:inline-flex;align-items:center;gap:4px;min-height:28px}
+.blink:hover{opacity:.75}
+.blink.low{color:var(--color-text-warning)}
+.blink.none{color:var(--color-text-tertiary);text-decoration:none;cursor:default}
+.barwrap{height:5px;background:var(--color-background-tertiary);border-radius:3px;overflow:hidden;margin-top:5px}
+.bar{height:100%;border-radius:3px;transition:width .25s}
+.mono{font-family:var(--font-mono)}
+.plain{font-size:calc(13px * var(--z));color:var(--color-text-secondary);line-height:1.6;margin:0}
+.ptitle{font-size:calc(13px * var(--z));font-weight:500;color:var(--color-text-primary);margin:0 0 2px}
+.stitle{font-size:calc(12px * var(--z));font-weight:500;color:var(--color-text-primary);margin:0 0 8px}
+.scen{border-radius:var(--border-radius-md);padding:calc(9px * var(--z)) calc(11px * var(--z));margin-bottom:8px;border:0.5px solid var(--color-border-tertiary)}
+.brow{display:flex;align-items:flex-start;gap:10px;padding:calc(10px * var(--z)) 0;border-bottom:0.5px solid var(--color-border-tertiary);cursor:pointer}
+.brow:last-child{border-bottom:none}
+.brow:hover .brow-title{color:var(--color-text-info)}
+.brow-title{font-size:calc(13px * var(--z));font-weight:500;color:var(--color-text-primary);margin:0 0 2px;transition:color .15s}
+.brow.active-row .brow-title{color:var(--color-text-info)}
+.preview{display:none;background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px 12px;margin-top:8px;border-left:2px solid var(--color-border-info)}
+.preview.open{display:block}
+.etoggle{background:none;border:none;font-size:calc(11px * var(--z));color:var(--color-text-info);cursor:pointer;padding:0;text-decoration:underline;text-underline-offset:2px}
+.ebox{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:9px 11px;margin-top:7px;display:none}
+.ebox.open{display:block}
+.zoom-wrap{display:flex;gap:4px;align-items:center}
+.zb{background:none;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:4px 10px;font-size:11px;cursor:pointer;color:var(--color-text-secondary);min-height:32px}
+.zb:hover{background:var(--color-background-secondary)}
+.zb.on{background:var(--color-background-info);color:var(--color-text-info);border-color:var(--color-border-info);font-weight:500}
+</style>
+
+<div class="ogp">
+
+<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding-bottom:14px;border-bottom:0.5px solid var(--color-border-tertiary);margin-bottom:14px;flex-wrap:wrap">
+  <div style="display:flex;align-items:center;gap:10px">
+    <div style="width:36px;height:36px;border-radius:8px;background:var(--color-background-info);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="12" r="9.5" stroke="var(--color-text-info)" stroke-width="1.4"/>
+        <ellipse cx="12" cy="12" rx="4.5" ry="9.5" stroke="var(--color-text-info)" stroke-width="1"/>
+        <line x1="2.5" y1="12" x2="21.5" y2="12" stroke="var(--color-text-info)" stroke-width="1"/>
+        <circle cx="12" cy="12" r="2.8" fill="var(--color-text-warning)"/>
+      </svg>
+    </div>
+    <div>
+      <p style="font-size:calc(14px * var(--z));font-weight:500;margin:0;color:var(--color-text-primary)">Open Governance Protocol</p>
+      <p style="font-size:calc(11px * var(--z));margin:0;color:var(--color-text-secondary)">The infrastructure for honest government</p>
+    </div>
+  </div>
+  <div class="zoom-wrap">
+    <span style="font-size:11px;color:var(--color-text-secondary);margin-right:2px">Text</span>
+    <button class="zb on" onclick="setZoom(1,this)">A</button>
+    <button class="zb" onclick="setZoom(1.18,this)" style="font-size:13px">A</button>
+    <button class="zb" onclick="setZoom(1.38,this)" style="font-size:15px">A</button>
+  </div>
+</div>
+
+<div class="stat-grid">
+  <div class="stat"><p class="lbl">Citizens</p><p class="stat-n">284,713</p></div>
+  <div class="stat"><p class="lbl">Active proposals</p><p class="stat-n">7</p></div>
+  <div class="stat"><p class="lbl">New briefings</p><p class="stat-n">3</p></div>
+  <div class="stat"><p class="lbl">Identity shards</p><p class="stat-n">1,408</p></div>
+</div>
+
+<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px">
+  <span class="badge"><span class="dot ok"></span>civic-id</span>
+  <span class="badge"><span class="dot ok"></span>civic-qv</span>
+  <span class="badge"><span class="dot ok"></span>civic-ai</span>
+  <span class="badge"><span class="dot ok"></span>civic-oracle</span>
+  <span class="badge"><span class="dot ok"></span>CCP Tier 1</span>
+  <span class="badge"><span class="dot ok"></span>34/34 tests</span>
+</div>
+
+<div class="nav">
+  <button class="tab on" id="tab-id" onclick="go('id',this)">Identity</button>
+  <button class="tab" id="tab-vote" onclick="go('vote',this)">Proposals</button>
+  <button class="tab" id="tab-brief" onclick="go('brief',this)">AI Briefing</button>
+  <button class="tab" id="tab-oracle" onclick="go('oracle',this)">Oracle</button>
+</div>
+
+<!-- IDENTITY -->
+<div id="p-id" class="panel on">
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+      <div>
+        <p class="lbl">Your civic identity · XRPL</p>
+        <p style="font-size:calc(22px * var(--z));font-weight:500;margin:4px 0;color:var(--color-text-primary)">Citizen #284,713</p>
+        <p class="mono" style="font-size:calc(11px * var(--z));color:var(--color-text-secondary);margin:0">r3GvKw...xJ9K · Mainnet</p>
+      </div>
+      <div style="text-align:right;flex-shrink:0">
+        <span class="pill" style="background:var(--color-background-success);color:var(--color-text-success)">Verified ✓</span>
+        <p style="font-size:calc(11px * var(--z));color:var(--color-text-secondary);margin:5px 0 0">Tier 2 · KYC</p>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <p class="stitle">Your identity token — permanently yours, non-transferable</p>
+    <p class="plain" style="margin-bottom:10px">This soulbound token proves you are a verified citizen. It cannot be sold, gifted, or taken away. It links your real-world identity to your voting rights on the Polygon network.</p>
+    <div class="g2">
+      <div><p class="lbl">Token ID</p><p class="mono" style="font-size:calc(12px * var(--z));color:var(--color-text-primary);margin:0">#00284713</p></div>
+      <div><p class="lbl">Standard</p><p style="font-size:calc(12px * var(--z));color:var(--color-text-primary);margin:0">XLS-20 · XRPL</p></div>
+      <div><p class="lbl">Network bridge</p><p style="font-size:calc(12px * var(--z));color:var(--color-text-primary);margin:0">XRPL → Polygon</p></div>
+      <div><p class="lbl">Identity shard</p><p style="font-size:calc(12px * var(--z));color:var(--color-text-primary);margin:0">003 · Depth 64</p></div>
+    </div>
+  </div>
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:6px">
+      <p class="stitle" style="margin:0">Your voting credits · Epoch 47</p>
+      <p style="font-size:calc(20px * var(--z));font-weight:500;margin:0;color:var(--color-text-info)" id="id-cr">100</p>
+    </div>
+    <div class="barwrap" style="margin-bottom:8px"><div class="bar" id="id-bar" style="width:100%;background:var(--color-text-info)"></div></div>
+    <p class="plain">You have 100 credits this voting period. Casting more votes on a proposal costs exponentially more — this prevents any citizen from dominating a vote. Credits reset in <strong style="color:var(--color-text-primary)">8 days</strong>.</p>
+  </div>
+  <button class="btn" onclick="sendPrompt('How does my Civic ID soulbound NFT connect to my quadratic voting power on Polygon via the XRPL identity bridge?')">About your identity ↗</button>
+</div>
+
+<!-- PROPOSALS -->
+<div id="p-vote" class="panel">
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+      <p class="stitle" style="margin:0">Credits remaining</p>
+      <p style="font-size:calc(16px * var(--z));font-weight:500;margin:0;color:var(--color-text-info)" id="cr-num">100</p>
+    </div>
+    <div class="barwrap" style="margin-bottom:8px"><div class="bar" id="cr-bar" style="width:100%;background:var(--color-text-info)"></div></div>
+    <p class="plain">Drag the sliders to cast votes. Each extra vote on the same proposal costs more credits — spreading votes across proposals goes further. Tap a briefing link to read the expert analysis before you vote.</p>
+  </div>
+
+  <div class="card">
+    <p class="lbl" style="margin-bottom:2px">Active proposals · Epoch 47</p>
+
+    <div class="prow">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;flex-wrap:wrap">
+        <p class="ptitle">Universal Healthcare Framework</p>
+        <span class="pill" style="background:var(--color-background-danger);color:var(--color-text-danger);font-size:calc(10px * var(--z))">constitutional</span>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;flex-wrap:wrap;gap:4px">
+        <p class="plain" style="font-size:calc(11px * var(--z))">6 days left · 12,407 citizens voted</p>
+        <button class="blink" onclick="togglePreview('prev-hc',this)">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style="flex-shrink:0"><circle cx="6" cy="6" r="5" stroke="currentColor" stroke-width="1.2"/><line x1="6" y1="4" x2="6" y2="8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><circle cx="6" cy="2.5" r=".8" fill="currentColor"/></svg>
+          AI briefing available
+        </button>
+      </div>
+      <div id="prev-hc" class="preview">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;flex-wrap:wrap;gap:4px">
+          <p style="font-size:calc(12px * var(--z));font-weight:500;color:var(--color-text-primary);margin:0">How reliable is this analysis?</p>
+          <span style="font-size:calc(12px * var(--z));font-weight:500;color:var(--color-text-success)">72/100 · High</span>
+        </div>
+        <div class="barwrap" style="margin-bottom:8px"><div class="bar" style="width:72%;background:var(--color-text-success)"></div></div>
+        <p style="font-size:calc(11px * var(--z));color:var(--color-text-secondary);margin:0 0 4px;font-weight:500">Most likely outcome</p>
+        <p class="plain" style="font-size:calc(12px * var(--z));margin-bottom:10px">Transition takes 6–7 years with some fiscal strain in the middle years. Healthcare costs fall by roughly one-eighth per person. 94% of citizens gain coverage, with savings building from Year 3 onward.</p>
+        <button class="btn" style="margin:0;min-height:36px;font-size:calc(12px * var(--z))" onclick="goToBriefing('healthcare')">Read full analysis — best &amp; worst case too →</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
+        <input type="range" min="0" max="10" value="0" step="1" id="s1" oninput="qv()" style="flex:1;min-width:80px">
+        <span style="font-size:calc(12px * var(--z));color:var(--color-text-secondary);white-space:nowrap"><span id="v1" style="font-weight:500;color:var(--color-text-primary)">0</span> votes · <span id="c1">0</span> cr</span>
+      </div>
+    </div>
+
+    <div class="prow">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;flex-wrap:wrap">
+        <p class="ptitle">Carbon Tax Reform Amendment</p>
+        <span class="pill" style="background:var(--color-background-info);color:var(--color-text-info);font-size:calc(10px * var(--z))">policy</span>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;flex-wrap:wrap;gap:4px">
+        <p class="plain" style="font-size:calc(11px * var(--z))">3 days left · 8,903 citizens voted</p>
+        <button class="blink low" onclick="togglePreview('prev-ct',this)">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style="flex-shrink:0"><circle cx="6" cy="6" r="5" stroke="currentColor" stroke-width="1.2"/><line x1="6" y1="4" x2="6" y2="8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><circle cx="6" cy="2.5" r=".8" fill="currentColor"/></svg>
+          Briefing · low confidence
+        </button>
+      </div>
+      <div id="prev-ct" class="preview" style="border-left-color:var(--color-border-warning)">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;flex-wrap:wrap;gap:4px">
+          <p style="font-size:calc(12px * var(--z));font-weight:500;color:var(--color-text-primary);margin:0">How reliable is this analysis?</p>
+          <span style="font-size:calc(12px * var(--z));font-weight:500;color:var(--color-text-warning)">44/100 · Low</span>
+        </div>
+        <div class="barwrap" style="margin-bottom:8px"><div class="bar" style="width:44%;background:var(--color-text-warning)"></div></div>
+        <p class="plain" style="font-size:calc(12px * var(--z));margin-bottom:6px;color:var(--color-text-warning)">Not enough historical data to be reliable. There are fewer than 5 matched historical policies and the simulations did not converge consistently.</p>
+        <p style="font-size:calc(11px * var(--z));color:var(--color-text-secondary);margin:0 0 4px;font-weight:500">Most likely outcome (low confidence)</p>
+        <p class="plain" style="font-size:calc(12px * var(--z));margin-bottom:10px">Emissions reduce by 15–18% over 7 years. Moderate industry disruption in transitional period. Revenue partially offsets citizen cost-of-living impact.</p>
+        <button class="btn" style="margin:0;min-height:36px;font-size:calc(12px * var(--z))" onclick="goToBriefing('carbon')">Read full analysis →</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
+        <input type="range" min="0" max="10" value="0" step="1" id="s2" oninput="qv()" style="flex:1;min-width:80px">
+        <span style="font-size:calc(12px * var(--z));color:var(--color-text-secondary);white-space:nowrap"><span id="v2" style="font-weight:500;color:var(--color-text-primary)">0</span> votes · <span id="c2">0</span> cr</span>
+      </div>
+    </div>
+
+    <div class="prow">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;flex-wrap:wrap">
+        <p class="ptitle">Citizen Prosperity Fund Allocation</p>
+        <span class="pill" style="background:var(--color-background-warning);color:var(--color-text-warning);font-size:calc(10px * var(--z))">budget</span>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;flex-wrap:wrap;gap:4px">
+        <p class="plain" style="font-size:calc(11px * var(--z))">11 days left · 21,088 citizens voted</p>
+        <button class="blink" onclick="togglePreview('prev-cpf',this)">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style="flex-shrink:0"><circle cx="6" cy="6" r="5" stroke="currentColor" stroke-width="1.2"/><line x1="6" y1="4" x2="6" y2="8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><circle cx="6" cy="2.5" r=".8" fill="currentColor"/></svg>
+          AI briefing available
+        </button>
+      </div>
+      <div id="prev-cpf" class="preview">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;flex-wrap:wrap;gap:4px">
+          <p style="font-size:calc(12px * var(--z));font-weight:500;color:var(--color-text-primary);margin:0">How reliable is this analysis?</p>
+          <span style="font-size:calc(12px * var(--z));font-weight:500;color:var(--color-text-success)">81/100 · High</span>
+        </div>
+        <div class="barwrap" style="margin-bottom:8px"><div class="bar" style="width:81%;background:var(--color-text-success)"></div></div>
+        <p style="font-size:calc(11px * var(--z));color:var(--color-text-secondary);margin:0 0 4px;font-weight:500">Most likely outcome</p>
+        <p class="plain" style="font-size:calc(12px * var(--z));margin-bottom:10px">Fund grows to 120% of GDP over 25 years following the Norway model. A modest citizen dividend begins from Year 8 and stabilises government finances during economic downturns.</p>
+        <button class="btn" style="margin:0;min-height:36px;font-size:calc(12px * var(--z))" onclick="goToBriefing('cpf')">Read full analysis — best &amp; worst case too →</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
+        <input type="range" min="0" max="10" value="0" step="1" id="s3" oninput="qv()" style="flex:1;min-width:80px">
+        <span style="font-size:calc(12px * var(--z));color:var(--color-text-secondary);white-space:nowrap"><span id="v3" style="font-weight:500;color:var(--color-text-primary)">0</span> votes · <span id="c3">0</span> cr</span>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn" id="sub-btn" onclick="doSubmit()">Submit votes securely ↗</button>
+  <button class="btn" onclick="sendPrompt('Explain how constitutional vs policy vs budget vote type classification works in OGP, and why some proposals always trigger a mandatory briefing.')">About proposal types ↗</button>
+</div>
+
+<!-- AI BRIEFING -->
+<div id="p-brief" class="panel">
+  <div id="brief-main"></div>
+
+  <div class="card">
+    <p class="stitle">Other briefings — tap to read</p>
+    <div id="brief-list"></div>
+  </div>
+  <button class="btn" onclick="sendPrompt('Explain the OGP scenario engine in plain language — how do the Monte Carlo simulations, historical policy database, and expert analysis combine to produce the three scenarios a citizen sees?')">How are briefings made? ↗</button>
+</div>
+
+<!-- ORACLE -->
+<div id="p-oracle" class="panel">
+  <div class="card">
+    <p class="lbl" style="margin-bottom:10px">Identity bridge · XRPL → Polygon</p>
+    <div class="g2">
+      <div><p class="lbl">Bridge status</p><p style="font-size:calc(13px * var(--z));font-weight:500;color:var(--color-text-success);margin:0">Operational</p></div>
+      <div><p class="lbl">AI service</p><p style="font-size:calc(13px * var(--z));font-weight:500;color:var(--color-text-primary);margin:0">Tier 1 · Live</p></div>
+      <div><p class="lbl">Proof server</p><p class="mono" style="font-size:calc(11px * var(--z));color:var(--color-text-primary);margin:0">localhost:3002</p></div>
+      <div><p class="lbl">Test suite</p><p style="font-size:calc(13px * var(--z));font-weight:500;color:var(--color-text-success);margin:0">34/34 passing</p></div>
+      <div><p class="lbl">Identity contract</p><p style="font-size:calc(11px * var(--z));color:var(--color-text-primary);margin:0">HierarchicalIdentityVerifier</p></div>
+      <div><p class="lbl">Tree capacity</p><p style="font-size:calc(13px * var(--z));font-weight:500;color:var(--color-text-primary);margin:0">Depth 64 · planetary</p></div>
+    </div>
+  </div>
+  <div class="card">
+    <p class="stitle">Your identity proof</p>
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap">
+      <div>
+        <p class="plain" style="margin-bottom:6px">A cryptographic proof you are a verified citizen — generated without revealing your personal details.</p>
+        <p class="mono" style="font-size:calc(11px * var(--z));color:var(--color-text-primary);margin:0 0 3px">π₀: 0x2e3f...a8d1</p>
+        <p class="mono" style="font-size:calc(11px * var(--z));color:var(--color-text-primary);margin:0 0 6px">π₁: 0x9c4b...7e0f</p>
+        <p class="plain">Generated 14 min ago · valid for 7 days</p>
+      </div>
+      <span class="pill" style="background:var(--color-background-success);color:var(--color-text-success);flex-shrink:0">Valid ✓</span>
+    </div>
+  </div>
+  <div class="card">
+    <p class="stitle">AI service continuity</p>
+    <p class="plain" style="margin-bottom:10px">The system automatically falls back through three tiers if a service goes offline.</p>
+    <div style="display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:0.5px solid var(--color-border-tertiary)">
+      <span class="pill" style="background:var(--color-background-success);color:var(--color-text-success);flex-shrink:0">Active</span>
+      <div><p class="ptitle">Tier 1 · Anthropic API</p><p class="plain">Full live analysis</p></div>
+    </div>
+    <div style="display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:0.5px solid var(--color-border-tertiary)">
+      <span class="pill" style="background:var(--color-background-secondary);color:var(--color-text-secondary);flex-shrink:0;border:0.5px solid var(--color-border-tertiary)">Standby</span>
+      <div><p class="ptitle">Tier 2 · Local AI (Ollama)</p><p class="plain">Activates if Tier 1 is unavailable</p></div>
+    </div>
+    <div style="display:flex;align-items:flex-start;gap:10px;padding:8px 0">
+      <span class="pill" style="background:var(--color-background-secondary);color:var(--color-text-secondary);flex-shrink:0;border:0.5px solid var(--color-border-tertiary)">Standby</span>
+      <div><p class="ptitle">Tier 3 · Saved briefings</p><p class="plain">Pre-generated briefings from permanent storage if both AI services are offline</p></div>
+    </div>
+  </div>
+  <div class="card">
+    <p class="stitle">Shard utilisation</p>
+    <div id="shards"></div>
+  </div>
+  <button class="btn" onclick="sendPrompt('Explain how the civic-oracle identity bridge works in plain language — how does a citizen XRPL identity become a verified vote on Polygon without revealing personal information?')">How the bridge works ↗</button>
+</div>
+</div>
+
+<script>
+var TOT=100;
+var currentBriefing='healthcare';
+
+var BD={
+  healthcare:{
+    title:'Universal Healthcare Framework',
+    type:'constitutional',typeColor:'danger',
+    confidence:72,confLabel:'High',confColor:'success',
+    timeAgo:'2h ago',studies:47,precedents:12,model:'Anthropic · Tier 1',
+    cid:'bafybeigdyrzt5sfp7udm7hu76uh7y26nf3efuylqabf3oclgtqy55fbzdi',
+    best:'Transition completes in 4 years. Healthcare costs drop by roughly one-fifth per person over a decade. 97% of citizens gain coverage. 31 of 39 expert sources support this trajectory.',
+    base:'Transition takes 6–7 years with some fiscal strain. Healthcare costs fall by roughly one-eighth per person. 94% of citizens gain coverage, with savings building from Year 3 onward.',
+    worst:'Implementation stalls at Year 2 due to capacity failures. Cost savings are minimal. Government spending overruns by 4–6% of GDP. 3 dissenting studies flagged this risk.'
+  },
+  carbon:{
+    title:'Carbon Tax Reform Amendment',
+    type:'policy',typeColor:'info',
+    confidence:44,confLabel:'Low',confColor:'warning',
+    timeAgo:'5h ago',studies:24,precedents:3,model:'Anthropic · Tier 1',
+    cid:'bafybeiczsscbf3k7b2xy4qjmknj6k7j3l4m5n6o7p8q9r0s1t2u3v4w5x6',
+    lowConf:true,
+    best:'Carbon emissions fall 28% within 5 years. Revenue funds green transition programs. Industry adapts faster than historical precedents suggest.',
+    base:'Emissions reduce by 15–18% over 7 years. Moderate industry disruption in transitional period. Revenue partially offsets citizen cost-of-living impact.',
+    worst:'Carbon leakage to non-taxed sectors undermines gains. Implementation delayed by 3+ years due to coordination failures.'
+  },
+  cpf:{
+    title:'Citizen Prosperity Fund — Norway GPF model',
+    type:'budget',typeColor:'warning',
+    confidence:81,confLabel:'High',confColor:'success',
+    timeAgo:'1 day ago',studies:38,precedents:15,model:'Ollama · Tier 2',
+    cid:'bafybeihdwdcefgh4skjha7qwqjp2u4dxpiqm4tncikpucpqzxjfvijmxcq',
+    best:'Fund reaches 180% of GDP within 20 years following the Norway GPF model. Annual citizen dividend covers basic needs for the lowest two income quintiles.',
+    base:'Fund grows to 120% of GDP over 25 years. A modest citizen dividend begins from Year 8 and stabilises government finances during economic downturns.',
+    worst:'Commodity price volatility slows fund growth. Dividend payments delayed by 5 years. Political pressure to withdraw capital early is the primary risk.'
+  }
+};
+
+function renderBriefing(key){
+  var b=BD[key];
+  var cc=b.confColor;
+  var lowWarn=b.lowConf?'<div style="background:var(--color-background-warning);border-radius:var(--border-radius-md);padding:9px 11px;margin-bottom:10px"><p style="font-size:calc(13px * var(--z));color:var(--color-text-warning);margin:0;font-weight:500">Low confidence — limited historical data</p><p style="font-size:calc(12px * var(--z));color:var(--color-text-warning);margin:4px 0 0;line-height:1.5">Fewer than 5 matched historical policies and the simulations did not converge consistently. Read carefully before voting.</p></div>':'';
+  return '<div class="card">'+
+    '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:10px;flex-wrap:wrap">'+
+      '<div><p class="lbl" style="margin-bottom:3px">Expert analysis · civic-ai</p>'+
+      '<p style="font-size:calc(15px * var(--z));font-weight:500;color:var(--color-text-primary);margin:0;line-height:1.3">'+b.title+'</p></div>'+
+      '<span class="pill" style="background:var(--color-background-'+b.typeColor+');color:var(--color-text-'+b.typeColor+');flex-shrink:0">'+b.type+'</span>'+
+    '</div>'+
+    lowWarn+
+    '<div style="background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px 12px">'+
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;flex-wrap:wrap;gap:4px">'+
+        '<p style="font-size:calc(12px * var(--z));font-weight:500;color:var(--color-text-primary);margin:0">How reliable is this analysis?</p>'+
+        '<span style="font-size:calc(13px * var(--z));font-weight:500;color:var(--color-text-'+cc+')">'+b.confidence+'/100 · '+b.confLabel+'</span>'+
+      '</div>'+
+      '<div class="barwrap" style="margin-bottom:6px"><div class="bar" style="width:'+b.confidence+'%;background:var(--color-text-'+cc+')"></div></div>'+
+      '<p class="plain" style="font-size:calc(11px * var(--z))">Models ran 1,000 simulations and reviewed '+b.precedents+' similar historical policies. '+(b.confidence>=60?'Results were consistent — different approaches kept pointing to the same conclusion.':'Results were inconsistent — use this briefing as a guide only, not a firm prediction.')+'</p>'+
+    '</div>'+
+  '</div>'+
+  '<div class="card">'+
+    '<p class="stitle">What the evidence suggests could happen</p>'+
+    '<div class="scen" style="background:var(--color-background-success)">'+
+      '<p style="font-size:calc(12px * var(--z));font-weight:500;color:var(--color-text-success);margin:0 0 4px">Best-case outcome <span style="font-weight:400;font-size:calc(11px * var(--z))">(1 in 7 chance)</span></p>'+
+      '<p style="font-size:calc(13px * var(--z));color:var(--color-text-success);margin:0;line-height:1.6">'+b.best+'</p>'+
+    '</div>'+
+    '<div class="scen" style="background:var(--color-background-secondary)">'+
+      '<p style="font-size:calc(12px * var(--z));font-weight:500;color:var(--color-text-primary);margin:0 0 4px">Most likely outcome <span style="font-weight:400;font-size:calc(11px * var(--z))">(median result)</span></p>'+
+      '<p style="font-size:calc(13px * var(--z));color:var(--color-text-secondary);margin:0;line-height:1.6">'+b.base+'</p>'+
+    '</div>'+
+    '<div class="scen" style="background:var(--color-background-danger)">'+
+      '<p style="font-size:calc(12px * var(--z));font-weight:500;color:var(--color-text-danger);margin:0 0 4px">Worst-case outcome <span style="font-weight:400;font-size:calc(11px * var(--z))">(1 in 7 chance)</span></p>'+
+      '<p style="font-size:calc(13px * var(--z));color:var(--color-text-danger);margin:0;line-height:1.6">'+b.worst+'</p>'+
+    '</div>'+
+  '</div>'+
+  '<div class="card">'+
+    '<p class="stitle">Sources &amp; audit trail</p>'+
+    '<div class="g2">'+
+      '<div><p class="lbl">Studies reviewed</p><p style="font-size:calc(14px * var(--z));font-weight:500;color:var(--color-text-primary);margin:0">'+b.studies+'</p></div>'+
+      '<div><p class="lbl">Historical matches</p><p style="font-size:calc(14px * var(--z));font-weight:500;color:var(--color-text-primary);margin:0">'+b.precedents+' policies</p></div>'+
+      '<div><p class="lbl">Data sources</p><p style="font-size:calc(12px * var(--z));color:var(--color-text-primary);margin:0">World Bank · OECD</p></div>'+
+      '<div><p class="lbl">AI model · CCP</p><p style="font-size:calc(12px * var(--z));color:var(--color-text-primary);margin:0">'+b.model+'</p></div>'+
+    '</div>'+
+    '<div style="border-top:0.5px solid var(--color-border-tertiary);margin-top:10px;padding-top:10px">'+
+      '<p class="lbl" style="margin-bottom:3px">Permanent record ID (IPFS)</p>'+
+      '<p class="mono" style="font-size:calc(10px * var(--z));color:var(--color-text-secondary);margin:0 0 5px;word-break:break-all">'+b.cid+'</p>'+
+      '<p class="plain" style="font-size:calc(11px * var(--z))">This ID permanently identifies this exact briefing. If the analysis is ever changed, the ID changes — so citizens can always verify the original.</p>'+
+    '</div>'+
+  '</div>';
+}
+
+function renderBriefList(activeKey){
+  var keys=Object.keys(BD);
+  var html='';
+  keys.forEach(function(k){
+    var b=BD[k];
+    var isActive=k===activeKey;
+    var statusBg=b.lowConf?'warning':'success';
+    var statusLabel=b.lowConf?'Low confidence':'Published';
+    html+='<div class="brow'+(isActive?' active-row':'')+'" onclick="loadBriefing(\''+k+'\')">'+
+      '<div style="flex:1;min-width:0">'+
+        '<p class="brow-title">'+b.title+(isActive?' <span style="font-size:calc(10px * var(--z));color:var(--color-text-info);font-weight:400">· currently viewing</span>':'')+'</p>'+
+        '<p class="plain" style="font-size:calc(11px * var(--z))">'+b.confidence+'/100 confidence · '+b.type+' · '+b.timeAgo+'</p>'+
+      '</div>'+
+      '<span class="pill" style="background:var(--color-background-'+statusBg+');color:var(--color-text-'+statusBg+');flex-shrink:0">'+statusLabel+'</span>'+
+    '</div>';
+  });
+  return html;
+}
+
+function loadBriefing(key){
+  currentBriefing=key;
+  document.getElementById('brief-main').innerHTML=renderBriefing(key);
+  document.getElementById('brief-list').innerHTML=renderBriefList(key);
+}
+
+function goToBriefing(key){
+  loadBriefing(key);
+  go('brief',document.getElementById('tab-brief'));
+}
+
+function togglePreview(id,btn){
+  var el=document.getElementById(id);
+  el.classList.toggle('open');
+}
+
+function go(name,btn){
+  document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('on')});
+  document.querySelectorAll('.tab').forEach(function(b){b.classList.remove('on')});
+  document.getElementById('p-'+name).classList.add('on');
+  btn.classList.add('on');
+}
+
+function setZoom(v,btn){
+  document.documentElement.style.setProperty('--z',v);
+  document.querySelectorAll('.zb').forEach(function(b){b.classList.remove('on')});
+  btn.classList.add('on');
+}
+
+function qv(){
+  var v1=+document.getElementById('s1').value;
+  var v2=+document.getElementById('s2').value;
+  var v3=+document.getElementById('s3').value;
+  var used=v1*v1+v2*v2+v3*v3;
+  var rem=Math.max(0,TOT-used);
+  document.getElementById('v1').textContent=v1;
+  document.getElementById('v2').textContent=v2;
+  document.getElementById('v3').textContent=v3;
+  document.getElementById('c1').textContent=v1*v1;
+  document.getElementById('c2').textContent=v2*v2;
+  document.getElementById('c3').textContent=v3*v3;
+  var pct=Math.round((rem/TOT)*100);
+  document.getElementById('cr-num').textContent=rem;
+  document.getElementById('cr-bar').style.width=pct+'%';
+  document.getElementById('id-cr').textContent=rem;
+  document.getElementById('id-bar').style.width=pct+'%';
+  var over=used>TOT;
+  var clr=over?'var(--color-text-danger)':'var(--color-text-info)';
+  document.getElementById('cr-num').style.color=clr;
+  document.getElementById('cr-bar').style.background=clr;
+  document.getElementById('id-bar').style.background=clr;
+  document.getElementById('sub-btn').disabled=over;
+}
+
+function doSubmit(){
+  sendPrompt('Walk me through what happens when a citizen submits quadratic votes in OGP — the ZK-PLONK proof, the Polygon contract call, and how the system verifies identity without revealing personal information.');
+}
+
+var shards=[{name:'Shard 001',pct:91,you:false},{name:'Shard 002',pct:74,you:false},{name:'Shard 003',pct:58,you:true},{name:'Shard 004',pct:43,you:false},{name:'Shard 005',pct:22,you:false}];
+var sw=document.getElementById('shards');
+shards.forEach(function(s){
+  var d=document.createElement('div');
+  d.style.cssText='display:flex;align-items:center;gap:8px;margin-bottom:8px';
+  d.innerHTML='<span style="font-size:11px;color:var(--color-text-secondary);min-width:100px;flex-shrink:0">'+s.name+(s.you?' (yours)':'')+'</span><div style="flex:1;height:5px;background:var(--color-background-tertiary);border-radius:3px;overflow:hidden"><div style="height:100%;width:'+s.pct+'%;background:'+(s.you?'var(--color-text-info)':'var(--color-border-secondary)')+';border-radius:3px"></div></div><span style="font-size:11px;color:var(--color-text-secondary);min-width:28px;text-align:right">'+s.pct+'%</span>';
+  sw.appendChild(d);
+});
+
+loadBriefing('healthcare');
+</script>
